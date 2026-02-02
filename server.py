@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 import faiss
 import numpy as np
+from mcp import MCPServer, Tool
 
 TOP_K = 4
 
@@ -44,3 +45,14 @@ def retrieve_context(query, top_k = TOP_K):
     distances, indices = index.search(query_vector, top_k)
     results = [employee_chunks[i] for i in indices[0]]
     return {"documents": results}
+
+retrieve_tool = Tool(
+    name = "retrieve_context",
+    description = "Return the most relevant employee records for a query",
+    input_schema = {"query" : str},
+    output_schema = {"documents" : list},
+    func = retrieve_context
+)
+
+server = MCPServer(tools=[retrieve_tool])
+server.start()
